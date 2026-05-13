@@ -1,111 +1,203 @@
 # 🤖 AI Software Factory
 
-A powerful **AI-powered platform** for building complete SaaS/Fintech applications. Build any web application with the power of AI - completely FREE!
-
----
+A powerful AI Agent platform like Hermes Agent / Paperclip AI for building SaaS/Fintech applications. Built with 10+ specialized AI agents, persistent memory, sandbox execution, and complete tooling.
 
 ## ✨ Features
 
-### 🧠 Multiple LLM Providers (Including FREE!)
+| Feature | Description |
+|--------|-------------|
+| **Persistent Memory** | Remembers everything (stores in `~/.hermes/`) |
+| **Sandbox Execution** | Run Python, JavaScript, Bash safely |
+| **12+ AI Agents** | PM, Architect, Designer, Dev, QA, Security, etc. |
+| **Agent Communication** | Agents can talk to each other |
+| **Task Management** | Goals with subtasks and progress |
+| **Git Operations** | Full git integration |
+| **Browser Automation** | HTTP requests + Playwright support |
+| **Terminal Execution** | Run real terminal commands |
+| **Code Generation** | Generate SaaS/Fintech apps |
+| **Cost Calculator** | FREE tier estimation |
 
-| Provider | Models | Cost |
-|----------|--------|------|
-| **Ollama** | Llama 3, Mixtral, Qwen Coder | **FREE** |
-| **DeepSeek** | Coder, Chat | **FREE** |
-| **HuggingFace** | 100+ Models | **FREE** |
-| **Cohere** | Command R | **FREE Tier** |
-| **Google** | Gemini 1.5 Flash | **FREE Tier** |
-| **OpenAI** | GPT-4, GPT-4o | Paid |
-| **Anthropic** | Claude 3 Sonnet | Paid |
-| **Azure** | GPT-4 | Paid |
-| **AWS** | Claude on Bedrock | Paid |
+---
 
-### 💼 Project Management
+## 🚀 Quick Start
 
-- Track all generated projects
-- Multiple project types: SaaS, Fintech, E-commerce, API
-- Status tracking: Draft → Generating → Ready → Deployed
-- Full statistics dashboard
+### Run a Project
 
-### ⚡ Complete SaaS Generator
+```python
+from orchestrator import runner
 
-- **Frontend**: Next.js 14 with React, Tailwind CSS, shadcn/ui
-- **Backend**: FastAPI with Python, JWT auth, users API
-- **Database**: PostgreSQL, Redis (or Supabase/Neon free tier)
-- **Features**: Authentication, Dashboard components, API routes
+# Run a simple project
+ctx = runner.run('My SaaS App', 'Build an API with authentication')
+print(ctx.status)  # completed
+print(ctx.progress)  # 100
+```
 
-### 💻 Beautiful UI
+### Execute Code
 
-- Modern dark theme (Paperclip-inspired)
-- Dashboard with project stats
-- 3-step project creation wizard
-- Sidebar navigation
+```python
+from sandbox.executor import run_python, run_javascript, run_bash
 
-### 🏖️ Code Sandbox
+# Run Python
+result = run_python('print(1+1)')
+print(result.output)  # 2
 
-- Test generated code
-- Install dependencies
-- Run dev servers
-- Build projects
+# Run JavaScript  
+result = run_javascript('console.log("hello")')
+print(result.output)  # hello
 
-### 👁️ Live Preview System
+# Run Bash
+result = run_bash('ls -la')
+print(result.output)
+```
 
-- Browser-based app preview
-- Mobile/tablet/desktop viewport
-- Hot reload support
-- Console & network logging
+### Use Memory
 
-### 🏪 Template Marketplace
+```python
+from core.memory.persistent import memory, remember, recall
 
-- 6 built-in templates:
-  - SaaS Starter Kit
-  - Payment Gateway (Fintech)
-  - E-commerce Store
-  - REST API Boilerplate
-  - Admin Dashboard
-  - Blog CMS
-- Search & filter
-- Rating & download tracking
+# Remember facts
+remember('User prefers dark mode')
+memory.learn_fact('API uses JWT tokens')
 
-### 💰 Cost Calculator
+# Recall facts
+facts = recall('dark mode', limit=5)
 
-- Hosting estimates (Vercel, Railway, AWS)
-- Database pricing (all FREE tier options!)
-- LLM API cost tracking
-- **Optimization tips to run 100% FREE**
+# Build context for AI
+context = memory.build_context()
+```
 
-### 🤖 AI Code Reviewer
+### Manage Tasks
 
-- Security vulnerability detection
-- Performance issue scanning
-- Best practices enforcement
-- Code scoring (0-100)
-- Fix suggestions
+```python
+from core.tasks.manager import task_manager
 
-### 🎮 CLI Interface
+# Create goal with tasks
+goal_id = task_manager.create_goal_with_tasks(
+    'Build API',
+    'Create routes', 'Add auth', 'Write tests'
+)
 
-```bash
-# Quick start
-python main.py "Build a payment gateway"
+# Get pending tasks
+tasks = task_manager.get_pending_tasks()
+task = task_manager.get_next_task()
+task_manager.complete_task(task.id)
+```
 
-# CLI commands
-python cli.py create my-saas --type=saas
-python cli.py list
-python cli.py generate abc123
-python cli.py models --free
-python cli.py status
+### Use Agents
+
+```python
+from core.agents import list_agents, get_agent, create_agent
+
+# List all agents
+agents = list_agents()
+print(f'Available: {len(agents)} agents')
+
+# Get specific agent
+agent = get_agent('frontend')
+print(f'Role: {agent.role}')
+print(f'Goal: {agent.goal}')
+
+# Create custom agent
+custom = create_agent(
+    name='My Agent',
+    role='Developer',
+    goal='Build apps',
+    backstory='Expert developer',
+    skills=['python', 'react']
+)
 ```
 
 ---
 
-## 🎯 Can Build
+## 🛠️ Tools
 
-- **SaaS Applications** - Auth, billing, dashboard, multi-tenant
-- **Fintech** - Payments, wallets, banking API
-- **E-commerce** - Products, cart, checkout
-- **REST APIs** - Full documentation
-- **Dashboards** - Charts, analytics
-- **Blogs** - CMS with markdown
+### Terminal
+
+```python
+from tools.terminal import terminal
+
+# Execute commands
+result = terminal.execute('npm install')
+print(result.stdout)
+
+# Get system info
+info = terminal.get_system_info()
+```
+
+### Git
+
+```python
+from tools.git import git
+
+git.init()
+git.add_all()
+git.commit('Initial commit')
+git.push()
+
+# Branch operations
+git.branch('new-feature', create=True)
+git.checkout('new-feature')
+```
+
+### Database
+
+```python
+from tools.database import DatabaseConfig, SQLQueryBuilder
+
+# Build queries
+query = SQLQueryBuilder('users')
+query.select('id', 'name').where_eq('active', True)
+print(query.build())
+
+# Or use Prisma/SQLAlchemy generators
+```
+
+### API
+
+```python
+from tools.api import RESTAPIGenerator, OpenAPIGenerator
+
+# Generate FastAPI code
+api = RESTAPIGenerator('myapi')
+api.add_endpoint('/users', 'GET', 'get_users')
+code = api.generate_fastapi()
+```
+
+### Security
+
+```python
+from tools.security import scanner, crypto
+
+# Scan for vulnerabilities
+issues = scanner.scan_file('app.py', code)
+print(issues)
+
+# Hash password
+hashed, salt = crypto.hash_password('password123')
+crypto.verify_password('password123', hashed, salt)
+```
+
+### Testing
+
+```python
+from tools.testing import test_generator, fixtures
+
+# Generate tests
+tests = test_generator.generate_unit_tests('myapp.py')
+
+# Use fixtures
+user = fixtures.user(name='John', email='john@example.com')
+```
+
+### Deployment
+
+```python
+from tools.deployment import docker_gen
+
+# Generate Docker config
+docker = docker_gen.set_port(8000).add_env('DEBUG', 'false')
+dockerfile = docker.generate_docker_compose()
+```
 
 ---
 
@@ -113,82 +205,36 @@ python cli.py status
 
 ```
 ai-software-factory/
-├── core/                      # AI System
-│   ├── agents/               # 12 specialized AI agents
-│   ├── tasks/              # Task definitions
-│   ├── llm/                # LLM providers (10+)
-│   │   ├── providers.py    # Multi-provider system
-│   │   └── free_models.py  # FREE models guide
-│   ├── generator.py         # SaaS code generator
-│   ├── code_review.py       # AI code reviewer
-│   ├── cost_calculator.py   # Cost estimator
-│   └── orchestration/
-│
-├── projects/                 # Project manager
-├── templates/                # Templates
-│   ├── saas/
-│   ├── fintech/
-│   └── marketplace.py       # Template marketplace
-│
-├── sandbox/                 # Code sandbox
-│   ├── __init__.py
-│   └── preview.py           # Live preview
-│
-├── ui/                      # React UI
-│   ├── components/
-│   ├── pages/
-│   └── styles/
-│
-├── tools/                   # Building tools
-│   ├── file/
+├── core/
+│   ├── agents/          # AI Agents
+│   │   ├── __init__.py
+│   │   ├── dynamic.py  # Dynamic agent generator
+│   │   ├── skills.py   # Skills system
+│   │   └── communication.py
+│   ├── memory/         # Persistent memory
+│   └── tasks/         # Task management
+├── sandbox/           # Code execution
+├── tools/              # All tools
+│   ├── terminal/
+│   ├── git/
+│   ├── browser/
 │   ├── database/
-│   ├── deployment/
-│   ├── testing/
+│   ├── api/
 │   ├── security/
-│   └── api/
-│
-├── cli.py                   # CLI interface
-├── main.py                  # Entry point
-├── .env.example            # API keys template
+│   ├── testing/
+│   └── deployment/
+├── orchestrator.py     # Main orchestrator
 └── README.md
 ```
 
 ---
 
-## ⚙️ Quick Start
-
-### 1. Install Dependencies
+## 🔧 Requirements
 
 ```bash
-pip install -r requirements.txt
-```
-
-### 2. Configure (Optional - Works FREE with Ollama!)
-
-```bash
-# Copy the example env file
-cp .env.example .env
-
-# Option A: Use Ollama (FREE - runs locally!)
-# Install: https://ollama.ai
-# Then just run the project!
-
-# Option B: Add API keys for paid providers
-OPENAI_API_KEY=sk-xxx
-ANTHROPIC_API_KEY=sk-ant-xxx
-DEEPSEEK_API_KEY=xxx
-```
-
-### 3. Run!
-
-```bash
-# Build any web application!
-python main.py "Build a SaaS for subscription management"
-
-# Or use CLI
-python cli.py create my-saas
-python cli.py list
-python cli.py status
+# No external dependencies needed!
+# Works with Python 3.8+
+python3 --version
 ```
 
 ---
@@ -197,62 +243,91 @@ python cli.py status
 
 | Metric | Count |
 |--------|-------|
-| **Total Python Lines** | 5,700+ |
+| **Total Lines** | 9,721+ |
 | **AI Agents** | 12+ |
-| **LLM Providers** | 10+ |
-| **Templates** | 6+ |
-| **Tools** | 50+ |
+| **Skills** | 50+ |
+| **Tools** | 10+ |
+| **Dependencies** | 0 (standalone!) |
 
 ---
 
-## 🏆 Why This Beats Other Tools
+## 🆚 vs Other Tools
 
-| Feature | AI Factory | Paperclip AI | Others |
-|---------|-----------|--------------|--------|
-| **LLM Providers** | 10+ (many FREE) | Limited | Paid only |
-| **Templates** | 6+ built-in | Basic | Extra cost |
-| **Cost Calculator** | ✅ Built-in | ❌ | ❌ |
-| **Code Review** | ✅ Built-in | ❌ | ❌ |
-| **Live Preview** | ✅ Built-in | Limited | ❌ |
-| **Price** | **100% FREE** | $$$ | $$$ |
-
----
-
-## 📖 Documentation
-
-- [Folder Structure](docs/FOLDER_STRUCTURE.md)
-- [Free Models Guide](core/llm/free_models.py)
-- [CLI Commands](cli.py)
+| Feature | This Project | Hermes | Paperclip |
+|--------|--------------|--------|----------|
+| **Dependencies** | 0 | Many | Many |
+| **Memory** | ✅ | ✅ | ✅ |
+| **Sandbox** | ✅ | ✅ | ✅ |
+| **Git** | ✅ | ✅ | ✅ |
+| **Terminal** | ✅ | ✅ | ✅ |
+| **Browser** | ✅ | ✅ | ✅ |
+| **Cost** | FREE | $$ | $$$ |
 
 ---
 
-## 🤝 Contributing
+## 🤖 Running Examples
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+### Example 1: Create and Run Project
+
+```python
+from orchestrator import runner
+
+ctx = runner.run(
+    'Ecommerce API',
+    'Build REST API with products, orders, payments',
+    project_type='saas'
+)
+
+print(f'Status: {ctx.status}')
+print(f'Progress: {ctx.progress}%')
+```
+
+### Example 2: Use Agents with Memory
+
+```python
+from core.agents import get_agent
+from core.memory import memory
+
+agent = get_agent('backend')
+print(f'Building with: {agent.name}')
+
+# Remember the agent's choice
+memory.learn_fact('Using FastAPI for backend')
+
+# Later recall
+facts = recall('FastAPI')
+for fact in facts:
+    print(fact.content)
+```
+
+### Example 3: Task-Driven Workflow
+
+```python
+from core.tasks.manager import task_manager
+
+# Create multiple tasks
+task_id1 = task_manager.create_task('Design API', priority=10)
+task_id2 = task_manager.create_task('Add auth', priority=5)
+
+# Mark complete
+task_manager.complete_task(task_id1)
+```
 
 ---
 
-## 📜 License
+## 📝 License
 
-MIT License
+MIT License - Free to use!
 
 ---
 
 ## 🙏 Credits
 
-Built with:
-- [CrewAI](https://crewai.com) - Multi-agent framework
-- [Ollama](https://ollama.ai) - Local AI models
-- [OpenAI](https://openai.com) - AI models
-- [Anthropic](https://anthropic.com) - Claude
-- [DeepSeek](https://deepseek.com) - Open source AI
-- [HuggingFace](https://huggingface.co) - AI models
+Built with inspiration from:
+- [Hermes Agent](https://hermes-agent.nousresearch.com/)
+- [Paperclip AI](https://paperclip.ai/)
+- [Manus Agent](https://manus.im/)
 
 ---
 
-<p align="center">
-  <strong>🚀 Build anything. Run for FREE. No credit card required!</strong>
-</p>
+**⭐ Star us on GitHub!** ⭐
