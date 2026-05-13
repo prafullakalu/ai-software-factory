@@ -1,18 +1,63 @@
-numpy==1.26.4
-crewai
-crewai-tools
-langchain
-langchain-community
-langchain-ollama
-duckduckgo-search
-python-dotenv
-gitpython
-docker
-psycopg2-binary
-sqlalchemy
-fastapi
-uvicorn
-black
-pytest
-rich
-typer
+# Core AI & Agents
+crewai>=0.80.0
+crewai-tools>=0.10.0
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-ollama>=0.2.0
+
+# Local AI
+ollama>=0.4.0
+
+# Web Search & Research
+duckduckgo-search>=7.0
+tavily>=0.4.0
+
+# Configuration
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Git Operations
+gitpython>=3.1.0
+
+# Docker
+docker>=7.0.0
+
+# Database
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+alembic>=1.0.0
+
+# Backend Frameworks
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+django>=5.0.0
+flask>=3.0.0
+express>=0.0.0  # Requires manual install
+
+# Frontend (optional)
+# npm install -g next@latest
+# npm install -g create-next-app
+# npm install -g vue@latest
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.24.0
+pytest-cov>=5.0.0
+
+# Code Quality
+black>=24.0.0
+ruff>=0.6.0
+mypy>=1.0.0
+
+# Utilities
+rich>=13.0.0
+typer>=0.13.0
+pyyaml>=6.0.0
+jinja2>=3.0.0
+
+# Kubernetes (optional)
+# kubernetes>=29.0.0
+
+# Terraform (optional)
+# python-terraform>=0.17.0
