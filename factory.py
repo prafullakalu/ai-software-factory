@@ -74,9 +74,9 @@ from tools.api import RESTAPIGenerator, OpenAPIGenerator
 from tools.security import scanner, crypto
 from tools.testing import test_generator, fixtures
 from tools.deployment import docker_gen, k8s_gen
-from tools.code_generator import generate_frontend, generate_backend, generate_fullstack
+from tools.fullstack_generator import generate_fullstack
 from tools.file import file_manager
-from workspace.manager import workspace, init, read, write, edit, status as ws_status, build as ws_build
+from workspace_manager import workspace, init, read, write, edit, status, build
 
 
 # ============================================================================
@@ -194,21 +194,23 @@ class GenerateCommands:
     
     @staticmethod
     def frontend(name: str = "my-app") -> str:
-        """Generate frontend."""
+        """Generate complete frontend."""
         try:
-            files = generate_frontend(name)
-            paths = "\n".join(f"  📄 {f.path}" for f in files)
-            return f"✅ Frontend generated:\n{paths}\n\nRun: cd workspace/generated && npm install && npm start"
+            from tools.fullstack_generator import generate_react
+            files = generate_react(name)
+            paths = "\n".join(f"  📄 {f}" for f in files)
+            return f"✅ Frontend generated:\n{paths}\n\n→ cd workspace/{name}/frontend && npm install && npm run dev"
         except Exception as e:
             return f"Error: {e}"
     
     @staticmethod
     def backend(name: str = "my-api") -> str:
-        """Generate backend."""
+        """Generate complete backend."""
         try:
-            files = generate_backend(name)
-            paths = "\n".join(f"  📄 {f.path}" for f in files)
-            return f"✅ Backend generated:\n{paths}\n\nRun: cd workspace/generated && pip install -r requirements.txt && uvicorn main:app"
+            from tools.fullstack_generator import generate_fastapi
+            files = generate_fastapi(name)
+            paths = "\n".join(f"  📄 {f}" for f in files)
+            return f"✅ Backend generated:\n{paths}\n\n→ cd workspace/{name}/backend && pip install -r requirements.txt && uvicorn main:app"
         except Exception as e:
             return f"Error: {e}"
     
@@ -219,14 +221,26 @@ class GenerateCommands:
     
     @staticmethod
     def fullstack(name: str = "my-app") -> str:
-        """Generate fullstack."""
+        """Generate COMPLETE fullstack app."""
         try:
             result = generate_fullstack(name)
-            lines = ["✅ Fullstack generated:"]
-            for f in result.get("frontend", []):
-                lines.append(f"  📄 {f.path}")
+            lines = ["✅ FULLSTACK APP GENERATED:"]
+            lines.append(f"\n📁 Frontend ({len(result.get('frontend', []))} files):")
+            for f in result.get("frontend", [])[:5]:
+                lines.append(f"  📄 {f}")
+            if len(result.get("frontend", [])) > 5:
+                lines.append(f"  ... and {len(result['frontend']) - 5} more")
+            
+            lines.append(f"\n📁 Backend ({len(result.get('backend', []))} files):")
             for f in result.get("backend", []):
-                lines.append(f"  📄 {f.path}")
+                lines.append(f"  📄 {f}")
+            
+            lines.append("\n" + "="*50)
+            lines.append("🚀 TO RUN:")
+            lines.append(f"  Terminal 1: cd workspace/{name}/frontend && npm install && npm run dev")
+            lines.append(f"  Terminal 2: cd workspace/{name}/backend && pip install -r requirements.txt && uvicorn main:app")
+            lines.append("="*50)
+            
             return "\n".join(lines)
         except Exception as e:
             return f"Error: {e}"

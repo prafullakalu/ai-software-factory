@@ -8,7 +8,7 @@ import os
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from workspace.manager import workspace, read, write, edit, init, status, build
+from workspace_manager import workspace, init, read, write, edit, status, build
 
 
 # ============================================================================
