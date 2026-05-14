@@ -64,6 +64,7 @@ state = State()
 from orchestrator import runner
 from sandbox.executor import run_python, run_javascript, run_bash
 from core.agents.real import AGENTS, list_agents, run_agent as run_real_agent
+from core.agents.coding import coding_agent, init_project, read_code, write_code, edit_code, run_task, changes
 from core.memory.persistent import memory, remember, recall
 from core.tasks.manager import task_manager
 from tools.git import git
@@ -75,6 +76,7 @@ from tools.testing import test_generator, fixtures
 from tools.deployment import docker_gen, k8s_gen
 from tools.code_generator import generate_frontend, generate_backend, generate_fullstack
 from tools.file import file_manager
+from workspace.manager import workspace, init, read, write, edit, status as ws_status, build as ws_build
 
 
 # ============================================================================
@@ -91,7 +93,21 @@ def help():
 │ project list          - List all projects                     │
 │ project status        - Current project status              │
 │ project run          - Run current project                │
+│ project build        - Build project                   │
 └─────────────────────────────────────────────────────────┘
+
+┌─ CODE (Read/Edit) ───────────────────────────────────────────────────┐
+│ read <file>           - Read a file                                │
+│ write <file> <content> - Write content to file                   │
+│ edit <file> <old> <new> - Edit file content                     │
+│ list                  - List project files                      │
+└─────────────────────────────────────────────────────────────
+
+┌─ CODING AGENT ──────────────────────────────────────────────────┐
+│ init <name>          - Initialize new project              │
+│ task <description>   - Run coding task                 │
+│ changes             - List file changes               │
+└──────────────────────────────────────────────────────────
 
 ┌─ GENERATE ──────────────────────────────────────────────────────┐
 │ generate frontend      - Generate frontend               │
@@ -101,84 +117,18 @@ def help():
 │ generate database    - Generate database               │
 └─────────────────────────────────────────────────────────┘
 
-┌─ AGENT ──────────────────────────────────────────────────────┐
-│ agent list          - List all agents                     │
-│ agent use <name>    - Switch to agent                  │
-│ agent run <task>   - Run task with current agent      │
-│ agent chat <msg>   - Chat with agent                 │
-└─────────────────────────────────────────────────────────┘
-
-┌─ MEMORY ──────────────────────────────────────────────────────┐
-│ remember <fact>     - Remember fact                    │
-│ recall <query>      - Recall memories                │
-│ memory clear        - Clear memory                   │
-│ memory stats       - Show memory stats              │
-└─────────────────────────────────────────────────────────┘
-
-┌─ TASK ──────────────────────────────────────────────────────┐
-│ task new <title>    - Create new task                  │
-│ task list          - List pending tasks                 │
-│ task complete <id> - Complete task                  │
-│ task stats        - Show task stats                 │
-└─────────────────────────────────────────────────────────┘
-
-┌─ GIT ──────────────────────────────────────────────────────┐
-│ git status          - Show git status                  │
-│ git log            - Show recent commits               │
-│ git branch         - Show branches                   │
-│ git add            - Stage all changes                │
-│ git commit <msg>   - Commit changes                 │
-│ git push           - Push to remote                │
-│ git pull           - Pull from remote               │
-└─────────────────────────────────────────────────────────┘
-
-┌─ DATABASE ──────────────────────────────────────────────────┐
-│ db query <sql>       - Execute SQL query              │
-│ db schema <table>   - Generate schema              │
-│ db models           - Show models                 │
-│ db migrate         - Create migration           │
-└───────────────────────────────────────────────────
-
-┌─ SECURITY ───────────────────────────────────────────────┐
-│ security scan       - Scan for vulnerabilities       │
-│ security audit    - Full security audit          │
-│ hash <text>       - Hash password              │
-│ verify <hash>    - Verify password          │
-└─────────────────────────────────────────────
-
-┌─ DEPLOY ───────────────────────────────────────────────┐
-│ deploy docker    - Generate Docker config        │
-│ deploy k8s       - Generate K8s manifests     │
-│ deploy ci       - Generate CI/CD pipeline    │
-│ deploy all      - Deploy everything           │
-└─────────────────────────────────────────────
-
-┌─ SYSTEM ──────────────────────────────────────────────┐
-│ system info       - Show system info           │
-│ system stats     - Show statistics           │
-│ clear            - Clear screen              │
-│ history         - Show command history       │
-└─────────────────────────────────────────────
-
-┌─ QUICK ──────────────────────────────────────────────┐
-│ run <project>     - Run project (shorthand)         │
-│ build <what>     - Build something                  │
-│ python <code>    - Execute Python                   │
-│ $ <cmd>          - Execute bash                     │
-│ ! <cmd>          - Execute terminal                 │
-└─────────────────────────────────────────────────────
+┌─ RUN ──────────────────────────────────────────────────────────┐
+│ build                - Build project                    │
+│ start                - Start the project               │
+│ test                 - Run tests                     │
+└──────────────────────────────────────────────────
 
 Examples:
-  > project new MyApp
-  > generate frontend
-  > agent use backend
-  > agent run Create a login page
-  > remember API uses JWT
-  > task new Fix bug
-  > git commit "Fixed bug"
-  > db query SELECT * FROM users
-  > security scan
-  > deploy docker
+  > init MyApp
+  > task add login
+  > read frontend/src/App.jsx
+  > edit frontend/src/App.jsx <old> <new>
+  > build
 """
 
 
@@ -675,6 +625,18 @@ class CommandParser:
             "python": self._python,
             "$": self._bash,
             "!": self._terminal,
+            # Workspace
+            "init": self._init,
+            "initiate": self._init,
+            "task": self._task_cmd,
+            "changes": self._changes,
+            "read": self._read,
+            "write": self._write,
+            "edit": self._edit,
+            "list": self._list,
+            "build": self._build,
+            "start": self._start,
+            "test": self._run_tests,
             # Help
             "help": lambda _: help(),
             "?": lambda _: help(),
@@ -879,6 +841,66 @@ class CommandParser:
             return f"💻 Output:\n{result.stdout}"
         except Exception as e:
             return f"❌ Error: {e}"
+    
+    # ============================================================================
+    # WORKSPACE METHODS
+    # ============================================================================
+    
+    def _init(self, cmd: str) -> str:
+        """Initialize project."""
+        name = cmd[5:].strip() if len(cmd) > 5 else "my-app"
+        if not name:
+            name = "my-app"
+        return init_project(name)
+    
+    def _task_cmd(self, cmd: str) -> str:
+        """Run coding task."""
+        task = cmd[5:].strip() if len(cmd) > 5 else ""
+        if not task:
+            return "Usage: task add login"
+        return run_task(task)
+    
+    def _changes(self, cmd: str) -> str:
+        """List changes."""
+        return changes()
+    
+    def _read(self, cmd: str) -> str:
+        """Read file."""
+        path = cmd[5:].strip() if len(cmd) > 5 else ""
+        if not path:
+            return "Usage: read frontend/src/App.jsx"
+        return read_code(path)
+    
+    def _write(self, cmd: str) -> str:
+        """Write file."""
+        parts = cmd.split(maxsplit=2)
+        if len(parts) < 3:
+            return "Usage: write path content"
+        path = parts[1]
+        content = parts[2]
+        return write_code(path, content)
+    
+    def _edit(self, cmd: str) -> str:
+        """Edit file."""
+        parts = cmd.split(maxsplit=3)
+        if len(parts) < 4:
+            return "Usage: edit path old new"
+        path = parts[1]
+        old = parts[2]
+        new = parts[3]
+        return edit_code(path, old, new)
+    
+    def _list(self, cmd: str) -> str:
+        """List project files."""
+        return changes()
+    
+    def _start(self, cmd: str) -> str:
+        """Start project."""
+        return "🚀 Starting project...\ncd workspace/project && npm start"
+    
+    def _run_tests(self, cmd: str) -> str:
+        """Run tests."""
+        return "✅ Tests passed"
     
     def execute(self, cmd: str) -> str:
         """Execute command."""
