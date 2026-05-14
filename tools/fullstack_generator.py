@@ -186,14 +186,14 @@ function Register() {{
   
   const handleSubmit = (e) => {{
     e.preventDefault()
-    alert(`Welcome ${{name}}!`)
+    alert(`Welcome ${name}!`)
   }}
   
   return (
     <div className="page">
       <h2>Create Account</h2>
       <form onSubmit={{handleSubmit}}>
-        <input type="text" placeholder="Name" value={{name}} onChange={{e => setName(e.target.value)}} />
+        <input type="text" placeholder="Name" value={name} onChange={{e => setName(e.target.value)}} />
         <input type="email" placeholder="Email" value={{email}} onChange={{e => setEmail(e.target.value)}} />
         <input type="password" placeholder="Password" value={{password}} onChange={{e => setPassword(e.target.value)}} />
         <button type="submit" className="btn">Create Account</button>
@@ -272,7 +272,7 @@ pydantic==2.5.2
     files.append("requirements.txt")
     
     # main.py - Full API!
-    write_file(f"{base}/main.py", f'''"""{{name}} - FastAPI Backend"""
+    write_file(f"{base}/main.py", f'''"""{name} - FastAPI Backend"""
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -284,8 +284,8 @@ import hashlib
 import secrets
 
 app = FastAPI(
-    title="{{name}} API",
-    description="Complete REST API for {{name}}",
+    title="{name} API",
+    description="Complete REST API for {name}",
     version="1.0.0",
 )
 
@@ -334,7 +334,7 @@ def new_token() -> str:
 # Routes
 @app.get("/")
 def root():
-    return {{"message": "{{name}} API", "version": "1.0.0"}}
+    return {{"message": "{name} API", "version": "1.0.0"}}
 
 @app.get("/health")
 def health():

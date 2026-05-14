@@ -1,4 +1,4 @@
-"""MySaaS - FastAPI Backend"""
+"""BestApp - FastAPI Backend"""
 
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,8 +10,8 @@ import hashlib
 import secrets
 
 app = FastAPI(
-    title="MySaaS API",
-    description="Complete REST API for MySaaS",
+    title="BestApp API",
+    description="Complete REST API for BestApp",
     version="1.0.0",
 )
 
@@ -60,7 +60,7 @@ def new_token() -> str:
 # Routes
 @app.get("/")
 def root():
-    return {"message": "MySaaS API", "version": "1.0.0"}
+    return {"message": "BestApp API", "version": "1.0.0"}
 
 @app.get("/health")
 def health():
