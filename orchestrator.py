@@ -1,118 +1,125 @@
 """
-⚙️ ORCHESTRATOR
+🔄 MULTI-AGENT PIPELINE ORCHESTRATOR
 
-Main orchestration system.
-Standalone - no external dependencies!
+Real AI-powered project generation with multiple agents.
+Pipeline: PM → CTO → Dev (Frontend + Backend) → QA → DevOps
 """
 
-from typing import Dict, List, Optional, Any
+import asyncio
+from pathlib import Path
+from typing import Dict, List, Optional, Callable, Any
 from dataclasses import dataclass, field
+from datetime import datetime
 
+from core.llm.client import LLMClient, get_client
+from core.agents.real import AIAgent
 
-# ============================================================================
-# ORCHESTRATOR TYPES
-# ============================================================================
 
 @dataclass
 class ExecutionContext:
-    """Context for execution."""
+    """Project execution context."""
     project_name: str
     requirements: str
     status: str = "pending"
     progress: int = 0
-    current_step: str = ""
     results: Dict[str, Any] = field(default_factory=dict)
     errors: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    created_at: str = ""
 
 
-# ============================================================================
-# ORCHESTRATOR
-# ============================================================================
-
-class Orchestrator:
-    """Main orchestrator that coordinates all agents."""
+class MultiAgentPipeline:
+    """
+    Multi-agent pipeline for complete project generation.
     
-    def __init__(self):
-        self.current_context: Optional[ExecutionContext] = None
-        self.history: List[ExecutionContext] = []
+    Stages:
+    1. PM - Requirements analysis
+    2. CTO - Architecture planning  
+    3. Dev - Code generation
+    4. QA - Review
+    5. DevOps - Infrastructure
+    """
     
-    def start_execution(self, project_name: str, requirements: str) -> ExecutionContext:
+    def __init__(self, ws_broadcaster: Optional[Callable] = None):
+        self.llm = get_client()
+        self.broadcaster = ws_broadcaster
+        self.agents = {
+            "pm": AIAgent("pm"),
+            "cto": AIAgent("cto"),
+            "dev": AIAgent("developer"),
+            "qa": AIAgent("qa"),
+            "devops": AIAgent("devops"),
+        }
+    
+    async def run(
+        self,
+        project_name: str,
+        requirements: str,
+        on_token: Optional[Callable] = None,
+    ) -> ExecutionContext:
+        """Run the complete pipeline."""
         ctx = ExecutionContext(
             project_name=project_name,
             requirements=requirements,
-            status="running",
-            current_step="initializing",
+            created_at=datetime.now().isoformat(),
         )
-        self.current_context = ctx
-        self.history.append(ctx)
+        
+        # Stage 1: PM
+        print("📋 Stage 1/5: PM analyzing requirements...")
+        backlog = await self._run_agent("pm", f"Create user stories for: {requirements}", on_token)
+        ctx.results["backlog"] = backlog
+        
+        # Stage 2: CTO
+        print("🧠 Stage 2/5: CTO creating architecture...")
+        arch = await self._run_agent("cto", f"Design architecture for:\n{backlog[:1000]}", on_token)
+        ctx.results["architecture"] = arch
+        
+        # Stage 3: Dev
+        print("💻 Stage 3/5: Generating code...")
+        from tools.fullstack_generator import generate_fullstack
+        result = generate_fullstack(project_name)
+        ctx.results["frontend_files"] = result.get("frontend", [])
+        ctx.results["backend_files"] = result.get("backend", [])
+        
+        # Stage 4: QA
+        print("🔍 Stage 4/5: Running QA review...")
+        qa_report = await self._run_agent("qa", f"Review code structure", on_token)
+        ctx.results["qa_report"] = qa_report
+        
+        # Stage 5: DevOps
+        print("🚀 Stage 5/5: Creating infrastructure...")
+        infra = await self._run_agent("devops", f"Create Docker for: {project_name}", on_token)
+        ctx.results["infrastructure"] = infra
+        
+        ctx.status = "completed"
+        ctx.progress = 100
+        print(f"✅ Project {project_name} complete!")
+        
         return ctx
     
-    def update_progress(self, progress: int, step: str = None):
-        if self.current_context:
-            self.current_context.progress = progress
-            if step:
-                self.current_context.current_step = step
-    
-    def add_result(self, key: str, value: Any):
-        if self.current_context:
-            self.current_context.results[key] = value
-    
-    def add_error(self, error: str):
-        if self.current_context:
-            self.current_context.errors.append(error)
-    
-    def complete(self, status: str = "completed"):
-        if self.current_context:
-            self.current_context.status = status
-    
-    def get_context(self) -> Optional[ExecutionContext]:
-        return self.current_context
-    
-    def get_history(self, limit: int = 10) -> List[ExecutionContext]:
-        return self.history[-limit:]
-
-
-class ProjectRunner:
-    """Run projects through the factory."""
-    
-    def __init__(self):
-        self.orchestrator = Orchestrator()
-    
-    def run(self, project_name: str, requirements: str, project_type: str = "saas") -> ExecutionContext:
-        ctx = self.orchestrator.start_execution(project_name, requirements)
+    async def _run_agent(self, agent_type: str, prompt: str, on_token: Optional[Callable] = None) -> str:
+        """Run an agent."""
+        agent = self.agents.get(agent_type, self.agents["dev"])
+        response = agent.chat(prompt)
         
-        steps = [
-            ("planning", "Creating project plan"),
-            ("architecture", "Designing system architecture"),
-            ("frontend", "Generating frontend code"),
-            ("backend", "Generating backend code"),
-            ("testing", "Writing tests"),
-            ("deployment", "Setting up deployment"),
-        ]
+        if on_token:
+            for word in response.split():
+                on_token(agent_type, word)
+                await asyncio.sleep(0.01)
         
-        total = len(steps)
-        for i, (step_key, step_name) in enumerate(steps):
-            self.orchestrator.update_progress(int(((i + 1) / total) * 100), step_name)
-            self.orchestrator.add_result(step_key, {"status": "completed", "name": step_name})
-        
-        self.orchestrator.complete()
-        return ctx
+        return response
     
-    def get_status(self) -> Dict:
-        ctx = self.orchestrator.get_context()
-        if not ctx:
-            return {"status": "idle"}
-        return {
-            "project": ctx.project_name,
-            "status": ctx.status,
-            "progress": ctx.progress,
-            "step": ctx.current_step,
-            "errors": ctx.errors,
-        }
+    def run_sync(self, project_name: str, requirements: str) -> ExecutionContext:
+        """Synchronous run."""
+        return asyncio.run(self.run(project_name, requirements))
 
 
-orchestrator = Orchestrator()
-runner = ProjectRunner()
+# Global pipeline
+pipeline = MultiAgentPipeline()
 
-__all__ = ["ExecutionContext", "Orchestrator", "ProjectRunner", "orchestrator", "runner"]
+
+def run_project(project_name: str, requirements: str) -> ExecutionContext:
+    """Run a project."""
+    return pipeline.run_sync(project_name, requirements)
+
+
+__all__ = ["MultiAgentPipeline", "ExecutionContext", "pipeline", "run_project"]

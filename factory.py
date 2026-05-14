@@ -61,7 +61,7 @@ state = State()
 # ============================================================================
 
 # Import all modules
-from orchestrator import runner
+from orchestrator import run_project as runner
 from sandbox.executor import run_python, run_javascript, run_bash
 from core.agents.real import AGENTS, list_agents, run_agent as run_real_agent
 from core.agents.coding import coding_agent, init_project, read_code, write_code, edit_code, run_task, changes
