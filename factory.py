@@ -76,6 +76,7 @@ from tools.testing import test_generator, fixtures
 from tools.deployment import docker_gen, k8s_gen
 from tools.fullstack_generator import generate_fullstack
 from tools.file import file_manager
+from core.analyzer.codebase import analyzer, analyze_and_report, analyze_for_llm
 from workspace_manager import workspace, init, read, write, edit, status, build
 
 
@@ -95,6 +96,11 @@ def help():
 │ project run          - Run current project                │
 │ project build        - Build project                   │
 └─────────────────────────────────────────────────────────┘
+
+┌─ ANALYZE ───────────────────────────────────────────────────────┐
+│ analyze                - Analyze current directory             │
+│ analyze <path>        - Analyze specific path            │
+└─────────────────────────────────────────────
 
 ┌─ CODE (Read/Edit) ───────────────────────────────────────────────────┐
 │ read <file>           - Read a file                                │
@@ -651,6 +657,8 @@ class CommandParser:
             "build": self._build,
             "start": self._start,
             "test": self._run_tests,
+            # Analyze
+            "analyze": self._analyze,
             # Help
             "help": lambda _: help(),
             "?": lambda _: help(),
@@ -915,6 +923,11 @@ class CommandParser:
     def _run_tests(self, cmd: str) -> str:
         """Run tests."""
         return "✅ Tests passed"
+    
+    def _analyze(self, cmd: str) -> str:
+        """Analyze codebase."""
+        path = cmd[8:].strip() if len(cmd) > 8 else "."
+        return analyze_and_report(path)
     
     def execute(self, cmd: str) -> str:
         """Execute command."""
