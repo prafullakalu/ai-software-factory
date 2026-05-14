@@ -177,8 +177,46 @@ async def run_analyze(client_id: str, path: str):
 
 
 # ============================================================================
-# REST API
+# TERMINAL WEBSOCKET
 # ============================================================================
+
+@app.websocket("/terminal")
+async def terminal_ws(ws: WebSocket):
+    """Bidirectional terminal session."""
+    await ws.accept()
+    import asyncio
+    import subprocess
+    
+    proc = await asyncio.create_subprocess_shell(
+        "python factory.py",
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    
+    async def read_output():
+        while True:
+            try:
+                line = await asyncio.wait_for(proc.stdout.read(256), timeout=1)
+                if not line:
+                    break
+                await ws.send_json({"type": "output", "text": line.decode()})
+            except asyncio.TimeoutError:
+                continue
+            except:
+                break
+    
+    asyncio.create_task(read_output())
+    
+    try:
+        while True:
+            data = await ws.receive_json()
+            if data.get("type") == "input":
+                cmd = data.get("command", "") + "\n"
+                proc.stdin.write(cmd.encode())
+                await proc.stdin.drain()
+    except WebSocketDisconnect:
+        proc.terminate()
 
 @app.get("/")
 def root():

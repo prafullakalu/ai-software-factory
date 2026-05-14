@@ -77,6 +77,7 @@ from tools.deployment import docker_gen, k8s_gen
 from tools.fullstack_generator import generate_fullstack
 from tools.file import file_manager
 from core.analyzer.codebase import analyzer, analyze_and_report, analyze_for_llm
+from core.memory.persistent import memory, remember, recall, memory_stats
 from workspace_manager import workspace, init, read, write, edit, status, build
 
 
@@ -96,6 +97,12 @@ def help():
 │ project run          - Run current project                │
 │ project build        - Build project                   │
 └─────────────────────────────────────────────────────────┘
+
+┌─ MEMORY ──────────────────────────────────────────────────────│
+│ remember <fact>      - Remember a fact                    │
+│ recall <query>      - Recall memories                │
+│ memory stats       - Show memory statistics      │
+└─────────────────────────────────────────────
 
 ┌─ ANALYZE ───────────────────────────────────────────────────────┐
 │ analyze                - Analyze current directory             │
