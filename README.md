@@ -97,13 +97,32 @@ python main.py "Build API with auth"
 
 ---
 
-## Models
+## 🤖 LLM Models
 
-Supported LLM providers:
-- **Ollama** (local, FREE!) - `ollama serve`
-- **DeepSeek** (FREE!) - Set DEEPSEEK_API_KEY
-- **OpenAI** (paid) - Set OPENAI_API_KEY
-- **Anthropic** (paid) - Set ANTHROPIC_API_KEY
+### Supported Providers:
+
+| Provider | Cost | How to Use |
+|----------|------|------------|
+| **Ollama** (Recommended!) | FREE | Install: `brew install ollama` then `ollama serve` |
+| **DeepSeek** | FREE | Set: `DEEPSEEK_API_KEY` |
+| **OpenAI** | Paid | Set: `OPENAI_API_KEY` |
+| **Anthropic** | Paid | Set: `ANTHROPIC_API_KEY` |
+
+### Quick Setup:
+
+```bash
+# Option 1: Ollama (FREE - runs locally)
+brew install ollama      # macOS
+# or: curl -fsSL https://ollama.com/install.sh | sh  # Linux
+
+ollama serve            # Start server
+ollama run llama3       # Test
+```
+
+```bash
+# Option 2: DeepSeek (FREE API)
+export DEEPSEEK_API_KEY="your-key-here"
+```
 
 ---
 
