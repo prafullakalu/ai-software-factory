@@ -73,6 +73,7 @@ from tools.api import RESTAPIGenerator, OpenAPIGenerator
 from tools.security import scanner, crypto
 from tools.testing import test_generator, fixtures
 from tools.deployment import docker_gen, k8s_gen
+from tools.code_generator import generate_frontend, generate_backend, generate_fullstack
 from tools.file import file_manager
 
 
@@ -242,44 +243,46 @@ class GenerateCommands:
     """Code generation commands."""
     
     @staticmethod
-    def frontend() -> str:
+    def frontend(name: str = "my-app") -> str:
         """Generate frontend."""
-        task = "Create a React frontend with Tailwind CSS"
         try:
-            result = run_real_agent("frontend", task)
-            return f"✅ Frontend generated:\n\n{result[:500]}..."
+            files = generate_frontend(name)
+            paths = "\n".join(f"  📄 {f.path}" for f in files)
+            return f"✅ Frontend generated:\n{paths}\n\nRun: cd workspace/generated && npm install && npm start"
         except Exception as e:
             return f"Error: {e}"
     
     @staticmethod
-    def backend() -> str:
+    def backend(name: str = "my-api") -> str:
         """Generate backend."""
-        task = "Create a FastAPI backend with auth"
         try:
-            result = run_real_agent("backend", task)
-            return f"✅ Backend generated:\n\n{result[:500]}..."
+            files = generate_backend(name)
+            paths = "\n".join(f"  📄 {f.path}" for f in files)
+            return f"✅ Backend generated:\n{paths}\n\nRun: cd workspace/generated && pip install -r requirements.txt && uvicorn main:app"
         except Exception as e:
             return f"Error: {e}"
     
     @staticmethod
-    def api() -> str:
+    def api(name: str = "my-api") -> str:
         """Generate API."""
-        task = "Create REST API with CRUD endpoints"
+        return GenerateCommands.backend(name)
+    
+    @staticmethod
+    def fullstack(name: str = "my-app") -> str:
+        """Generate fullstack."""
         try:
-            result = run_real_agent("backend", task)
-            return f"✅ API generated:\n\n{result[:500]}..."
+            result = generate_fullstack(name)
+            lines = ["✅ Fullstack generated:"]
+            for f in result.get("frontend", []):
+                lines.append(f"  📄 {f.path}")
+            for f in result.get("backend", []):
+                lines.append(f"  📄 {f.path}")
+            return "\n".join(lines)
         except Exception as e:
             return f"Error: {e}"
     
     @staticmethod
-    def fullstack() -> str:
-        """Generate fullstack."""
-        frontend = GenerateCommands.frontend()
-        backend = GenerateCommands.backend()
-        return f"✅ Fullstack generated:\n{frontend}\n{backend}"
-    
-    @staticmethod
-    def database() -> str:
+    def database(name: str = "my-app") -> str:
         """Generate database."""
         gen = PrismaSchemaGenerator()
         gen.add_model("User", {
@@ -701,19 +704,21 @@ class CommandParser:
     def _generate(self, cmd: str) -> str:
         parts = cmd.split()
         if len(parts) < 2:
-            return "Usage: generate <frontend|backend|api|fullstack>"
+            return "Usage: generate <frontend|backend|api|fullstack> [name]"
+        
         gen_type = parts[1]
+        name = parts[2] if len(parts) > 2 else "my-app"
         
         if gen_type == "frontend":
-            return GenerateCommands.frontend()
+            return GenerateCommands.frontend(name)
         elif gen_type == "backend":
-            return GenerateCommands.backend()
+            return GenerateCommands.backend(name)
         elif gen_type == "api":
-            return GenerateCommands.api()
+            return GenerateCommands.api(name)
         elif gen_type == "fullstack":
-            return GenerateCommands.fullstack()
+            return GenerateCommands.fullstack(name)
         elif gen_type == "database":
-            return GenerateCommands.database()
+            return GenerateCommands.database(name)
         return f"Unknown: {gen_type}"
     
     def _agent(self, cmd: str) -> str:
